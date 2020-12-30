@@ -11,12 +11,22 @@ defmodule RunLengthEncoder do
     Regex.scan(~r/([A-Za-z ])\1{0,}/,string) 
     |> Enum.map(fn x-> [String.length(List.first(x)), List.last(x)] end)
     |> List.flatten
-    |> Enum.map_join(fn x-> 
-      if x==1, do: "",else: x
-      end)
+    |> Enum.map_join(fn x-> if x==1, do: "",else: x end)
   end
 
   @spec decode(String.t()) :: String.t()
   def decode(string) do
+    String.split(string, ~r/()\d+[A-Za-z ]()/, on: [1,2], trim: true) 
+    |> Enum.map_join(fn substring -> convert_substring(substring) end)
   end
+
+  defp convert_substring(substring) do
+    if Regex.match?(~r/\d/, substring) do
+      {number_string,letter} = String.split_at(substring, -1)
+      String.duplicate(letter, String.to_integer(number_string))
+    else 
+      substring
+    end
+  end
+
 end
